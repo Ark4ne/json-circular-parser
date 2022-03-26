@@ -1,10 +1,10 @@
 import { parse, stringify } from '../src'
 
-test('Work as JSON.stringify - object', function () {
+test('Work as JSON.stringify - object', () => {
   const object = {
     a: 'a',
     b: 'b',
-    c: function () {},
+    c: () => ({}),
     d: { e: 123 },
     f: undefined,
     g: true,
@@ -14,32 +14,32 @@ test('Work as JSON.stringify - object', function () {
 
   expect(stringify(object)).toStrictEqual(JSON.stringify(object))
 })
-test('Work as JSON.stringify - string', function () {
+test('Work as JSON.stringify - string', () => {
   const str = 'Azerty-QSDFGHJKL-wxcvbn'
 
   expect(stringify(str)).toStrictEqual(JSON.stringify(str))
 })
-test('Work as JSON.stringify - number', function () {
-  const number = 123
+test('Work as JSON.stringify - number', () => {
+  const value = 123
 
-  expect(stringify(number)).toStrictEqual(JSON.stringify(number))
+  expect(stringify(value)).toStrictEqual(JSON.stringify(value))
 })
-test('Work as JSON.stringify - boolean', function () {
+test('Work as JSON.stringify - boolean', () => {
   expect(stringify(true)).toStrictEqual(JSON.stringify(true))
   expect(stringify(false)).toStrictEqual(JSON.stringify(false))
 })
-test('Work as JSON.stringify - null', function () {
+test('Work as JSON.stringify - null', () => {
   expect(stringify(null)).toStrictEqual(JSON.stringify(null))
 })
-test('Work as JSON.stringify - undefined', function () {
+test('Work as JSON.stringify - undefined', () => {
   expect(stringify(undefined)).toStrictEqual(JSON.stringify(undefined))
 })
 
-test('Work as JSON.parse', function () {
+test('Work as JSON.parse', () => {
   const str = JSON.stringify({
     a: 'a',
     b: 'b',
-    c: function () {},
+    c: () => ({}),
     d: { e: 123 },
     f: undefined,
     g: true,
@@ -49,31 +49,30 @@ test('Work as JSON.parse', function () {
 
   expect(parse(str)).toStrictEqual(JSON.parse(str))
 })
-test('Work as JSON.parse - string', function () {
+test('Work as JSON.parse - string', () => {
   const str = JSON.stringify('Azerty-QSDFGHJKL-wxcvbn')
   expect(parse(str)).toStrictEqual(JSON.parse(str))
 })
-test('Work as JSON.parse - number', function () {
-  const number = JSON.stringify(123)
-  expect(parse(number)).toStrictEqual(JSON.parse(number))
+test('Work as JSON.parse - number', () => {
+  const value = JSON.stringify(123)
+  expect(parse(value)).toStrictEqual(JSON.parse(value))
 })
-test('Work as JSON.parse - boolean', function () {
-  const stringify_true = JSON.stringify(true)
-  expect(parse(stringify_true)).toStrictEqual(JSON.parse(stringify_true))
-  const stringify_false = JSON.stringify(false)
-  expect(parse(stringify_false)).toStrictEqual(JSON.parse(stringify_false))
+test('Work as JSON.parse - boolean', () => {
+  const stringifyTrue = JSON.stringify(true)
+  expect(parse(stringifyTrue)).toStrictEqual(JSON.parse(stringifyTrue))
+  const stringifyFalse = JSON.stringify(false)
+  expect(parse(stringifyFalse)).toStrictEqual(JSON.parse(stringifyFalse))
 })
-test('Work as JSON.parse - null', function () {
-  const stringify_null = JSON.stringify(null)
-  expect(parse(stringify_null)).toStrictEqual(JSON.parse(stringify_null))
+test('Work as JSON.parse - null', () => {
+  const stringifyNull = JSON.stringify(null)
+  expect(parse(stringifyNull)).toStrictEqual(JSON.parse(stringifyNull))
 })
-test('Work as JSON.parse - empty', function () {
-  const stringify_empty = JSON.stringify('')
+test('Work as JSON.parse - empty', () => {
+  const stringifyEmpty = JSON.stringify('')
+  expect(parse(stringifyEmpty)).toStrictEqual(JSON.parse(stringifyEmpty))
+})
 
-  expect(parse(stringify_empty)).toStrictEqual(JSON.parse(stringify_empty))
-})
-
-test('Recreate original structure', function () {
+test('Recreate original structure', () => {
   const o: any = {}
   o.a = o
   o.c = {}
@@ -94,7 +93,7 @@ test('Recreate original structure', function () {
   expect(re.c.f).toStrictEqual(re.d)
   expect(re.b).toStrictEqual(re.c)
 })
-test('Recreate original structure with array', function () {
+test('Recreate original structure with array', () => {
   const o: any = { a: [1, 2, 3] }
   o.o = o
   o.a.push(o)
@@ -102,24 +101,25 @@ test('Recreate original structure with array', function () {
   expect(re.o).toStrictEqual(re)
   expect(re.a[3]).toStrictEqual(re)
 })
-test('Make sure only own properties are parsed', function () {
+test('Make sure only own properties are parsed', () => {
   // make sure only own properties are parsed
+  // tslint:disable-next-line:no-string-literal
   Object.prototype['shenanigans'] = true
 
   const item: any = {
-      name: 'TEST',
-    },
-    original = {
-      outer: [
-        {
-          a: 'b',
-          c: 'd',
-          one: item,
-          many: [item],
-          e: 'f',
-        },
-      ],
-    }
+    name: 'TEST',
+  }
+  const original = {
+    outer: [
+      {
+        a: 'b',
+        c: 'd',
+        one: item,
+        many: [item],
+        e: 'f',
+      },
+    ],
+  }
   item.value = item
   const str = stringify(original)
   expect(str).toStrictEqual(
@@ -144,42 +144,43 @@ test('Make sure only own properties are parsed', function () {
   expect(output.outer[0].many[0].name).toStrictEqual(original.outer[0].many[0].name)
   expect(output.outer[0].many[0]).toStrictEqual(output.outer[0].one)
 
+  // tslint:disable-next-line:no-string-literal
   delete Object.prototype['shenanigans']
 })
-test('Multiple reference', function () {
-  const unique = { a: 'sup' },
-    nested = {
-      prop: {
-        value: 123,
-      },
-      a: [
-        {},
-        {
-          b: [
-            {
-              a: 1,
-              d: 2,
-              c: unique,
-              z: {
-                g: 2,
-                b: {
-                  r: 4,
-                  u: unique,
-                  c: 5,
-                },
-                f: 6,
-                a: unique,
+test('Multiple reference', () => {
+  const unique = { a: 'sup' }
+  const nested = {
+    prop: {
+      value: 123,
+    },
+    a: [
+      {},
+      {
+        b: [
+          {
+            a: 1,
+            d: 2,
+            c: unique,
+            z: {
+              g: 2,
+              b: {
+                r: 4,
+                u: unique,
+                c: 5,
               },
+              f: 6,
+              a: unique,
             },
-          ],
-        },
-      ],
-      b: {
-        e: 'f',
-        t: unique,
-        p: 4,
+          },
+        ],
       },
-    }
+    ],
+    b: {
+      e: 'f',
+      t: unique,
+      p: 4,
+    },
+  }
   const str = stringify(nested)
   expect(str).toStrictEqual(
     JSON.stringify({
@@ -218,21 +219,21 @@ test('Multiple reference', function () {
   expect(output.b.t.a).toStrictEqual('sup')
   expect(output.a[1].b[0].c).toStrictEqual(output.b.t)
 })
-test('String with [Circular ~]', function () {
+test('String with [Circular ~]', () => {
   const o = { bar: '[Circular ~]' }
   const s = stringify(o)
   expect(s).toStrictEqual('{"bar":"[Circular ~]"}')
   const re = parse(s)
   expect(re.bar).toStrictEqual(o.bar)
 })
-test('String wrong [Circular ~[]]', function () {
+test('String wrong [Circular ~[]]', () => {
   const o = { bar: '[Circular ~["hello world"]]' }
   const s = stringify(o)
   expect(s).toStrictEqual(JSON.stringify({ bar: '[Circular ~["hello world"]]' }))
   const re = parse(s)
   expect(re.bar).toStrictEqual(undefined)
 })
-test('Multiple circular & reference', function () {
+test('Multiple circular & reference', () => {
   const o: any = {}
   o.a = {
     aa: {
@@ -290,7 +291,7 @@ test('Multiple circular & reference', function () {
   expect(o.c.ce).toStrictEqual('value2')
   expect(o.c.cf).toStrictEqual('value3')
 })
-test('Multiple circular & reference with array', function () {
+test('Multiple circular & reference with array', () => {
   const original: any = {
     a1: {
       a2: [],
@@ -308,7 +309,7 @@ test('Multiple circular & reference with array', function () {
   expect(restored.a1.a2[0]).toStrictEqual(restored.a1)
   expect(restored.a4[0]).toStrictEqual(restored.a1.a3[0])
 })
-test('Complex circular', function () {
+test('Complex circular', () => {
   const ac = { ac: '123' }
   const aa = {
     get ab() {
@@ -323,7 +324,7 @@ test('Complex circular', function () {
     },
   }
   const object = {
-    aa: aa,
+    aa,
     ac: '123',
     ab,
   }
@@ -333,7 +334,7 @@ test('Complex circular', function () {
   expect(parsed.aa.ab.aa).toStrictEqual(parsed.aa)
   expect(parsed.aa.aa).toStrictEqual(parsed.ab.ac)
 })
-test('Symbol', function () {
+test('Symbol', () => {
   const o = { a: 1 }
   const a = [1, Symbol('test'), 2]
   o[Symbol('test')] = 123
@@ -341,7 +342,7 @@ test('Symbol', function () {
   expect(stringify(o)).toStrictEqual(JSON.stringify(o))
   expect(stringify(a)).toStrictEqual(JSON.stringify(a))
 })
-test('Empty keys', function () {
+test('Empty keys', () => {
   const a: any = { b: { '': { c: { d: 1 } } } }
   a._circular = a.b['']
   const json = stringify(a)
