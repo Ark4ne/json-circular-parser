@@ -1,6 +1,6 @@
 {
   "name": "json-circular-parser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JSONCircularParser ============ Serializes and deserializes otherwise valid JSON objects containing circular references into and from a specialized JSON format.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
