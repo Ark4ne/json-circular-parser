@@ -15,6 +15,14 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ark4ne/json-circular-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ark4ne/json-circular-parser/issues"
+  },
+  "homepage": "https://github.com/Ark4ne/json-circular-parser#readme",
   "keywords": [
     "JSON",
     "circular",
