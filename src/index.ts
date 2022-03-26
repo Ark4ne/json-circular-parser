@@ -1,13 +1,17 @@
-const replacer = () => {
+type Replacer = (this: any, key: string, value: any) => any
+type Reviver = (this: any, key: string, value: any) => any
+
+const makeReplacer = (replacer?: Replacer): Replacer => {
   const map = new WeakMap()
   const stacks: object[] = []
   const current: string[] = []
 
   let root = true
 
-  return (key: string, value: any) => {
-    if (!root) {
-      while (stacks.length && stacks[stacks.length - 1][key] !== value) {
+  return function (key: string, value: any): any {
+    if (root) stacks.push(this)
+    else if (stacks[stacks.length - 1] !== this && stacks.includes(this)) {
+      while (stacks.length && stacks[stacks.length - 1] !== this) {
         stacks.pop()
         current.pop()
       }
@@ -24,15 +28,16 @@ const replacer = () => {
 
     root = false
 
-    return value
+    return replacer ? replacer.call(this, key, value) : value
   }
 }
 
-const reviver = () => {
+const makeReviver = (results: { hasCircular: boolean }, reviver?: Reviver): Reviver => {
   const CIRCULAR_REVIVER = /^\[Circular ~\[.*]]$/
 
-  return (key: string, value: any) => {
+  return function (key: string, value: any): any {
     if (typeof value === 'string' && CIRCULAR_REVIVER.test(value)) {
+      results.hasCircular = true
       return (root: object) => {
         try {
           const keys = JSON.parse(value.substring(11, value.length - 1))
@@ -43,12 +48,10 @@ const reviver = () => {
           for (; keys.length && typeof root[current] === 'object'; current = keys.shift()) root = root[current]
 
           return root[current]
-        } catch (_) {
-          return value
-        }
+        } catch (_) {}
       }
     }
-    return value
+    return reviver ? reviver.call(this, key, value) : value
   }
 }
 
@@ -64,12 +67,14 @@ const resolver = (root: object, obj: object = root): any => {
   return obj
 }
 
-export const stringify = (value: any, space?: number | string): string => JSON.stringify(value, replacer(), space)
+export const stringify = (value: any, replacer?: Replacer, space?: number | string): string =>
+  JSON.stringify(value, makeReplacer(replacer), space)
 
-export const parse = (text: string): any => {
-  const data = JSON.parse(text, reviver())
+export const parse = (text: string, reviver?: Reviver): any => {
+  const results = { hasCircular: false }
+  const data = JSON.parse(text, makeReviver(results, reviver))
 
-  return typeof data === 'object' && data !== null ? resolver(data) : data
+  return results.hasCircular && typeof data === 'object' && data !== null ? resolver(data) : data
 }
 
 export default { stringify, parse }
