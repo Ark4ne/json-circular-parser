@@ -34,7 +34,59 @@ test('Work as JSON.stringify - null', () => {
 test('Work as JSON.stringify - undefined', () => {
   expect(stringify(undefined)).toStrictEqual(JSON.stringify(undefined))
 })
+test('Work as JSON.stringify with whilelist', () => {
+  const o: any = {
+    _ref1: {
+      '0': {},
+      '1': {},
+      '2': {},
+    },
+    _ref2: {},
+    get _ref3() {
+      return o
+    },
+    _ref4: ['abc', 'def', 'ghi'],
+  }
+  const whitelist = ['_ref1', '_ref4', 2]
+  expect(stringify(o, whitelist)).toStrictEqual(JSON.stringify(o, whitelist))
+})
+test('Work as JSON.stringify with replacer', () => {
+  let counter
+  const o = {
+    [0]: {},
+  }
+  const replacer = (key: string, value: any) => {
+    if (counter === 10) return value
+    counter++
 
+    return {
+      [counter]: o,
+    }
+  }
+  counter = 0
+  const actual = stringify(o, replacer)
+  counter = 0
+  const expected = JSON.stringify(o, replacer)
+  expect(actual).toStrictEqual(expected)
+})
+test('Work as JSON.stringify with replacer circular', () => {
+  let counter = 0
+  const o = {
+    [0]: {},
+  }
+  const replacer = (key: string, value: any) => {
+    if (counter === 5) return o
+    counter++
+
+    return {
+      [counter]: o,
+    }
+  }
+  const actual = stringify(o, replacer)
+  expect(actual).toStrictEqual(
+    JSON.stringify({ '1': { '2': { '3': { '4': { '5': { '0': '[Circular ~["1","2","3","4","5"]]' } } } } } }),
+  )
+})
 test('Work as JSON.parse', () => {
   const str = JSON.stringify({
     a: 'a',
