@@ -2,14 +2,15 @@ import { parse, stringify } from '../src'
 
 test('Work as JSON.stringify - object', () => {
   const object = {
-    a: 'a',
-    b: 'b',
-    c: () => ({}),
-    d: { e: 123 },
-    f: undefined,
-    g: true,
-    h: null,
-    i: false,
+    'a': 'a',
+    'b': 'b',
+    'c': () => ({}),
+    'd': { e: 123 },
+    'f': undefined,
+    'g': true,
+    'h': null,
+    'i': false,
+    'abc"def,ghi': false,
   }
 
   expect(stringify(object)).toStrictEqual(JSON.stringify(object))
@@ -210,10 +211,11 @@ test('Multiple reference', () => {
       {
         b: [
           {
-            a: 1,
-            d: 2,
-            c: unique,
-            z: {
+            '1\'2"3,"': unique,
+            'a': 1,
+            'd': 2,
+            'c': unique,
+            'z': {
               g: 2,
               b: {
                 r: 4,
@@ -242,18 +244,19 @@ test('Multiple reference', () => {
         {
           b: [
             {
-              a: 1,
-              d: 2,
-              c: { a: 'sup' },
-              z: {
+              '1\'2"3,"': { a: 'sup' },
+              'a': 1,
+              'd': 2,
+              'c': '[Circular ~["a","1","b","0","1\'2\\"3,\\""]]',
+              'z': {
                 g: 2,
                 b: {
                   r: 4,
-                  u: '[Circular ~["a","1","b","0","c"]]',
+                  u: '[Circular ~["a","1","b","0","1\'2\\"3,\\""]]',
                   c: 5,
                 },
                 f: 6,
-                a: '[Circular ~["a","1","b","0","c"]]',
+                a: '[Circular ~["a","1","b","0","1\'2\\"3,\\""]]',
               },
             },
           ],
@@ -261,7 +264,7 @@ test('Multiple reference', () => {
       ],
       b: {
         e: 'f',
-        t: '[Circular ~["a","1","b","0","c"]]',
+        t: '[Circular ~["a","1","b","0","1\'2\\"3,\\""]]',
         p: 4,
       },
     }),
@@ -269,7 +272,8 @@ test('Multiple reference', () => {
 
   const output = parse(str)
   expect(output.b.t.a).toStrictEqual('sup')
-  expect(output.a[1].b[0].c).toStrictEqual(output.b.t)
+  expect(output.a[1].b[0]['1\'2"3,"']).toStrictEqual(output.b.t)
+  expect(output.a[1].b[0]['1\'2"3,"']).toStrictEqual(output.a[1].b[0].c)
 })
 test('String with [Circular ~]', () => {
   const o = { bar: '[Circular ~]' }
