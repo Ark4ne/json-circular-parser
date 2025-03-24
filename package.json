@@ -36,7 +36,8 @@
   "author": "Ark4ne (gui.allegret@gmail.com)",
   "license": "ISC",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "src/**/*"
   ],
   "devDependencies": {
     "@types/jest": "^27.4.1",
